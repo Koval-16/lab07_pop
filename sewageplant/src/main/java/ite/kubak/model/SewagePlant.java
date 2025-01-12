@@ -15,10 +15,8 @@ public class SewagePlant implements ISewagePlant {
         new Thread(()->{
             try {
                 ServerSocket serverSocket = new ServerSocket(port);
-                System.out.println("SewagePlant nasłuchuje na porcie "+serverSocket.getLocalPort());
                 while (true) {
                     Socket clientSocket = serverSocket.accept();
-                    System.out.println("Połączono z cysterną: " + clientSocket.getPort());
                     new Thread(new SewagePlantThread(clientSocket,this)).start();
                 }
             } catch (IOException e) {
@@ -29,12 +27,16 @@ public class SewagePlant implements ISewagePlant {
 
     @Override
     public int setPumpIn(int number, int volume) {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         if(tankers_summary.containsKey(number)) {
             tankers_summary.replace(number,tankers_summary.get(number)+volume);
         }
         else tankers_summary.put(number,volume);
-        System.out.println("Cysterna #" + number + " opróżniona. Objętość: " + volume + " litrów.");
-        return 0; // Zwracamy nową objętość cysterny
+        return 0;
     }
 
     @Override
@@ -70,16 +72,13 @@ class SewagePlantThread implements Runnable {
             BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
             OutputStream outputStream = clientSocket.getOutputStream();
             PrintWriter pw = new PrintWriter(outputStream,true);
-            String request = bufferedReader.readLine(); // Odczytaj żądanie od klienta
-            System.out.println("Otrzymano żądanie: " + request);
-
+            String request = bufferedReader.readLine();
             if (request.startsWith("spi:")) {
                 String[] parts = request.substring(4).split(",");
                 int number = Integer.parseInt(parts[0]);
                 int volume = Integer.parseInt(parts[1]);
-                // Wywołanie metody interfejsu i zwrócenie wyniku
                 int newVolume = sewagePlant.setPumpIn(number, volume);
-                pw.println(newVolume); // Wysłanie odpowiedzi do klienta
+                pw.println(newVolume);
             }
             else if(request.startsWith("gs:")){
                 int number = Integer.parseInt(request.substring(3));
@@ -91,7 +90,7 @@ class SewagePlantThread implements Runnable {
                 sewagePlant.setPayoff(number);
             }
             else {
-                pw.println(-1); // Nieznane żądanie - kod błędu
+                pw.println(-1);
             }
         } catch (IOException e) {
             e.printStackTrace();

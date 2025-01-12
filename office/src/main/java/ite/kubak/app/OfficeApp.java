@@ -16,7 +16,7 @@ public class OfficeApp extends Application {
 
         Scene scene = new Scene(root);
 
-        primaryStage.setTitle("HOUSE");
+        primaryStage.setTitle("OFFICE");
         primaryStage.setScene(scene);
         primaryStage.show();
     }

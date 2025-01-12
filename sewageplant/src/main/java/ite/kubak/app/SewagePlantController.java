@@ -15,6 +15,8 @@ public class SewagePlantController {
     @FXML
     public void button_clicked(){
         listener.start(Integer.parseInt(port.getText()));
+        button.setDisable(true);
+        port.setDisable(true);
     }
 
 }

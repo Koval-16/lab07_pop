@@ -16,7 +16,7 @@ public class SewagePlantApp extends Application {
 
         Scene scene = new Scene(root);
 
-        primaryStage.setTitle("HOUSE");
+        primaryStage.setTitle("SEWAGE");
         primaryStage.setScene(scene);
         primaryStage.show();
     }

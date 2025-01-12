@@ -12,19 +12,21 @@ public class House implements IHouse{
     private int current_volume;
     private boolean using;
     private int ordered;
+    private String office_host;
+    private int office_port;
 
-    public void start(String host, int port, int max_volume){
+    public void start(String host, int port, int max_volume, String office_host, int office_port){
         this.host = host;
         this.port = port;
         this.max_volume = max_volume;
         this.current_volume = 0;
+        this.office_host = office_host;
+        this.office_port = office_port;
         new Thread(()->{
             try{
                 ServerSocket serverSocket = new ServerSocket(port);
-                System.out.println("House nasłuchuje na porcie "+serverSocket.getLocalPort());
                 while(true){
                     Socket clientSocket = serverSocket.accept();
-                    System.out.println("Połączono: " + clientSocket.getPort());
                     new Thread(new HouseThread(clientSocket,this)).start();
                 }
             } catch (IOException e){
@@ -38,6 +40,8 @@ public class House implements IHouse{
     public int getPumpOut(int max){
         int got_pumped_out = current_volume;
         current_volume = 0;
+        ordered = 0;
+        if(!using) switch_usage();
         return got_pumped_out;
     }
 
@@ -60,10 +64,9 @@ public class House implements IHouse{
                         if((current_volume>=0.8*max_volume)&&(ordered==0)){
                             order_tanker(host, port);
                         }
+                        if(current_volume>=max_volume) switch_usage();
                     }
                 }
-                System.out.println("MAX: "+max_volume);
-                System.out.println("CURR: "+current_volume);
             }
         }).start();
     }
@@ -71,7 +74,7 @@ public class House implements IHouse{
     public void order_tanker(String host, int port){
         if(current_volume>=0.8*max_volume){
             try{
-                Socket socket = new Socket(host, port);
+                Socket socket = new Socket(office_host, office_port);
                 OutputStream out = socket.getOutputStream();
                 PrintWriter pw = new PrintWriter(out, true);
                 InputStream inputStream = socket.getInputStream();
@@ -96,6 +99,15 @@ public class House implements IHouse{
         return current_volume;
     }
 
+    public void set_office_adress(String office_host, int office_port){
+        this.office_host = office_host;
+        this.office_port = office_port;
+    }
+
+    public int is_ordered(){
+        return ordered;
+    }
+
 }
 
 class HouseThread implements Runnable{
@@ -115,9 +127,7 @@ class HouseThread implements Runnable{
             BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
             OutputStream outputStream = socket.getOutputStream();
             PrintWriter pw = new PrintWriter(outputStream,true);
-            String request = bufferedReader.readLine(); // Odczytaj żądanie od klienta
-            System.out.println("Otrzymano żądanie: " + request);
-
+            String request = bufferedReader.readLine();
             if (request.startsWith("gp:")) {
                 int max_vol = Integer.parseInt(request.substring(3));
                 int pumped_out_vol = house.getPumpOut(max_vol);

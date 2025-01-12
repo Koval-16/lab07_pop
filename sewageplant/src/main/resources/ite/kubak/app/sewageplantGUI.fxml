@@ -9,7 +9,7 @@
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ite.kubak.app.SewagePlantController">
    <children>
-      <TextField fx:id="port" layoutX="25.0" layoutY="49.0" />
+      <TextField fx:id="port" layoutX="25.0" layoutY="49.0" text="2137" />
       <Label layoutX="25.0" layoutY="32.0" text="Nasłuchuj na" />
       <Button fx:id="button" layoutX="25.0" layoutY="74.0" mnemonicParsing="false" onAction="#button_clicked" prefHeight="25.0" prefWidth="149.0" text="OK" />
       <TableView fx:id="tankers" layoutX="25.0" layoutY="117.0" prefHeight="191.0" prefWidth="149.0">

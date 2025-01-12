@@ -17,7 +17,7 @@ public class TankerApp extends Application{
 
         Scene scene = new Scene(root);
 
-        primaryStage.setTitle("Tanker");
+        primaryStage.setTitle("TANKER");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
