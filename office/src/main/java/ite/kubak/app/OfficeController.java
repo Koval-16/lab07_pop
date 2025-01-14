@@ -35,17 +35,30 @@ public class OfficeController {
     @FXML
     public void ok_button_clicked(){
         String sewage_host = host_field.getText();
-        int sewage_port = Integer.parseInt(port_field.getText());
-        int port = Integer.parseInt(office_field.getText());
-        listener.start(sewage_host, sewage_port, port);
-        update_table();
-        pay_button.setDisable(false);
-        check_button.setDisable(false);
-        givejob_button.setDisable(false);
-        ok_button.setDisable(true);
-        office_field.setDisable(true);
-        host_field.setDisable(true);
-        port_field.setDisable(true);
+        try{
+            int sewage_port = Integer.parseInt(port_field.getText());
+            int port = Integer.parseInt(office_field.getText());
+            if(port<0 || port>65535) throw new IllegalArgumentException();
+            if(sewage_port<0 || sewage_port>65535) throw new IllegalArgumentException();
+            if(listener.start(sewage_host, sewage_port, port)){
+                update_table();
+                pay_button.setDisable(false);
+                check_button.setDisable(false);
+                givejob_button.setDisable(false);
+                ok_button.setDisable(true);
+                office_field.setDisable(true);
+                host_field.setDisable(true);
+                port_field.setDisable(true);
+            }
+            else throw new IllegalArgumentException();
+        } catch (Exception e){
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("NIEPOPRAWNE DANE");
+            alert.setHeaderText("Wprowadzono niepoprawne dane portu lub hosta");
+            alert.setContentText("Upewnij się, że porty to liczba od 0 do 65535, oraz że istnieje Oczyszczalnia o danym porcie");
+            alert.showAndWait();
+        }
+
     }
 
     @FXML

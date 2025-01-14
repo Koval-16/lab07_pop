@@ -3,10 +3,7 @@ package ite.kubak.app;
 import ite.kubak.model.HouseListener;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 
 public class HouseController {
 
@@ -27,20 +24,35 @@ public class HouseController {
 
     @FXML
     public void port_button_clicked(){
-        listener.start(Integer.parseInt(port_field.getText()),
-                host_field.getText(),
-                Integer.parseInt(volume_field.getText()),
-                officehost.getText(),
-                Integer.parseInt(officeport.getText()));
-        startProgressBarUpdate();
-        port_button.setDisable(true);
-        use_button.setDisable(false);
-        office_button.setDisable(false);
-        port_field.setDisable(true);
-        host_field.setDisable(true);
-        volume_field.setDisable(true);
-        host.setText("Host biura: "+officehost.getText());
-        port.setText("Port biura: "+officeport.getText());
+        try{
+            int port_val = Integer.parseInt(port_field.getText());
+            String host_val = host_field.getText();
+            int volume = Integer.parseInt(volume_field.getText());
+            String office_host = officehost.getText();
+            int office_port = Integer.parseInt(officeport.getText());
+            if(port_val<0 || port_val>65535) throw new IllegalArgumentException();
+            if(office_port<0 || office_port>65535) throw new IllegalArgumentException();
+            if(volume<=0) throw new IllegalArgumentException();
+            if(listener.start(port_val,host_val,volume,office_host,office_port)){
+                startProgressBarUpdate();
+                port_button.setDisable(true);
+                use_button.setDisable(false);
+                office_button.setDisable(false);
+                port_field.setDisable(true);
+                host_field.setDisable(true);
+                volume_field.setDisable(true);
+                host.setText("Host biura: "+officehost.getText());
+                port.setText("Port biura: "+officeport.getText());
+            }
+            else throw new IllegalArgumentException();
+        } catch (Exception e){
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("NIEPOPRAWNE DANE");
+            alert.setHeaderText("Wprowadzono niepoprawne dane portu lub hosta");
+            alert.setContentText("Upewnij się, że porty to liczba od 0 do 65535, oraz że istnieje podany port biura." +
+                    " Zwróć też uwagę, że pojemność szamba musi być liczbą naturalną >0");
+            alert.showAndWait();
+        }
     }
 
     @FXML
@@ -63,7 +75,7 @@ public class HouseController {
                 }
                 Platform.runLater(() ->{
                     progress.setProgress(listener.getProgress());
-                    percent.setText((listener.getProgress()*100)+"%");
+                    percent.setText(String.format("%.2f%%", listener.getProgress() * 100));
                     if(listener.is_ordered()==1) order.setText("Zamówiono wywóz");
                     else order.setText("");
                 } );

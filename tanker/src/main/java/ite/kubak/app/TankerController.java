@@ -3,9 +3,7 @@ package ite.kubak.app;
 import ite.kubak.model.TankerListener;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 
 public class TankerController {
 
@@ -20,26 +18,42 @@ public class TankerController {
     @FXML private Button ready_button;
     @FXML private Button goto_sewage_button;
     @FXML private ProgressBar progress;
+    @FXML private Label percentage;
     private TankerListener listener = new TankerListener();
 
     @FXML
     public void ok_button_clicked(){
-        int max_value = Integer.parseInt(max_volume.getText());
-        String host = tanker_host.getText();
-        int port = Integer.parseInt(tanker_port.getText());
-        String host_sewage = sewage_host.getText();
-        int port_sewage = Integer.parseInt(sewage_port.getText());
-        int port_office = Integer.parseInt(office_port.getText());
-        listener.start(max_value, host, port, host_sewage, port_sewage, port_office);
-        tanker_port.setDisable(true);
-        tanker_host.setDisable(true);
-        office_port.setDisable(true);
-        sewage_host.setDisable(true);
-        sewage_port.setDisable(true);
-        max_volume.setDisable(true);
-        ok_button.setDisable(true);
-        register_button.setDisable(false);
-        startProgressBarUpdate();
+        try{
+            int max_value = Integer.parseInt(max_volume.getText());
+            String host = tanker_host.getText();
+            int port = Integer.parseInt(tanker_port.getText());
+            String host_sewage = sewage_host.getText();
+            int port_sewage = Integer.parseInt(sewage_port.getText());
+            int port_office = Integer.parseInt(office_port.getText());
+            if(port<0 || port>65535) throw new IllegalArgumentException();
+            if(port_sewage<0 || port_sewage>65535) throw new IllegalArgumentException();
+            if(port_office<0 || port_office>65535) throw new IllegalArgumentException();
+            if(max_value<=0) throw new IllegalArgumentException();
+            if(listener.start(max_value, host, port, host_sewage, port_sewage, port_office)){
+                tanker_port.setDisable(true);
+                tanker_host.setDisable(true);
+                office_port.setDisable(true);
+                sewage_host.setDisable(true);
+                sewage_port.setDisable(true);
+                max_volume.setDisable(true);
+                ok_button.setDisable(true);
+                register_button.setDisable(false);
+                startProgressBarUpdate();
+            }
+            else throw new IllegalArgumentException();
+        } catch (Exception e){
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("NIEPOPRAWNE DANE");
+            alert.setHeaderText("Wprowadzono niepoprawne dane portu lub hosta");
+            alert.setContentText("Upewnij się, że porty to liczba od 0 do 65535, oraz że istnieją" +
+                    "Oczyszcalnia oraz Biuro o danym porcie. Pojemność cysterny musi być liczbą naturalną >0");
+            alert.showAndWait();
+        }
     }
 
     @FXML
@@ -75,6 +89,7 @@ public class TankerController {
                 }
                 Platform.runLater(() ->{
                     progress.setProgress(listener.getProgress());
+                    percentage.setText(String.format("%.2f%%", listener.getProgress() * 100));
                     if(listener.getReady()){
                         goto_sewage_button.setDisable(true);
                         ready_button.setDisable(true);

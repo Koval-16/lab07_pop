@@ -6,8 +6,12 @@ import java.util.List;
 public class OfficeListener {
     Office office = new Office();
 
-    public void start(String sewage_host, int sewage_port, int port){
-        office.start(sewage_host, sewage_port, port);
+    public boolean start(String sewage_host, int sewage_port, int port){
+        if(office.test_sewage_connection(sewage_host,sewage_port)){
+            office.start(sewage_host, sewage_port, port);
+            return true;
+        }
+        else return false;
     }
 
     public List<RegisteredInfo> get_tankers_to_table(){

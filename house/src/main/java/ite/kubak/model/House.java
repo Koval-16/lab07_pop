@@ -3,6 +3,7 @@ package ite.kubak.model;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Random;
 
 public class House implements IHouse{
 
@@ -36,10 +37,19 @@ public class House implements IHouse{
         using_water(host,port);
     }
 
+    public boolean test_connection(String office_host, int office_port){
+        try{
+            Socket socket = new Socket(office_host,office_port);
+            return true;
+        }catch (IOException e){
+            return false;
+        }
+    }
+
     @Override
     public int getPumpOut(int max){
-        int got_pumped_out = current_volume;
-        current_volume = 0;
+        int got_pumped_out = Math.min(current_volume,max);
+        current_volume = current_volume-got_pumped_out;
         ordered = 0;
         if(!using) switch_usage();
         return got_pumped_out;
@@ -50,6 +60,7 @@ public class House implements IHouse{
     }
 
     public void using_water(String host, int port){
+        Random random = new Random();
         new Thread(() -> {
             while(true){
                 try{
@@ -59,7 +70,7 @@ public class House implements IHouse{
                 }
                 if(using){
                     synchronized (this){
-                        int increase = 10;
+                        int increase = random.nextInt(10);
                         current_volume = Math.min(current_volume+increase,max_volume);
                         if((current_volume>=0.8*max_volume)&&(ordered==0)){
                             order_tanker(host, port);

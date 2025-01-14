@@ -37,6 +37,16 @@ public class Tanker implements ITanker {
         }).start();
     }
 
+    public boolean test_connection(String sewage_host, int sewage_port, int office_port){
+        try{
+            Socket socket1 = new Socket(sewage_host,sewage_port);
+            Socket socket2 = new Socket(sewage_host,office_port);
+            return true;
+        } catch (IOException e){
+            return false;
+        }
+    }
+
     @Override
     public void setJob(String host, int port){
         try{
@@ -96,7 +106,7 @@ public class Tanker implements ITanker {
             InputStream inputStream = socket.getInputStream();
             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
             BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-            String request = "gp:"+max_volume;
+            String request = "gp:"+(max_volume-volume);
             pw.println(request);
             String response = bufferedReader.readLine();
             volume += Integer.parseInt(response);

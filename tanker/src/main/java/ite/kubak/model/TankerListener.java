@@ -3,8 +3,12 @@ package ite.kubak.model;
 public class TankerListener {
     Tanker tanker = new Tanker();
 
-    public void start(int max_value, String host, int port, String sewage_host, int sewage_port, int office_port){
-        tanker.start(max_value, host, port, sewage_host, sewage_port, office_port);
+    public boolean start(int max_value, String host, int port, String sewage_host, int sewage_port, int office_port){
+        if(tanker.test_connection(sewage_host,sewage_port,office_port)){
+            tanker.start(max_value, host, port, sewage_host, sewage_port, office_port);
+            return true;
+        }
+        else return false;
     }
 
     public void register(){

@@ -33,6 +33,15 @@ public class Office implements IOffice{
         }).start();
     }
 
+    public boolean test_sewage_connection(String sewage_host, int sewage_port){
+        try{
+            Socket socket = new Socket(sewage_host,sewage_port);
+            return true;
+        } catch (IOException e){
+            return false;
+        }
+    }
+
     @Override
     public int register(String host, int port){
         int number = tankers.size()+1;
