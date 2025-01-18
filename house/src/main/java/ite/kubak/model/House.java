@@ -1,6 +1,9 @@
 package ite.kubak.model;
 
+import ite.kubak.sockets.SocketHandler;
+
 import java.io.*;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Random;
@@ -23,27 +26,12 @@ public class House implements IHouse{
         this.current_volume = 0;
         this.office_host = office_host;
         this.office_port = office_port;
-        new Thread(()->{
-            try{
-                ServerSocket serverSocket = new ServerSocket(port);
-                while(true){
-                    Socket clientSocket = serverSocket.accept();
-                    new Thread(new HouseThread(clientSocket,this)).start();
-                }
-            } catch (IOException e){
-                e.printStackTrace();
-            }
-        }).start();
+        SocketHandler.startServer(port,host,socket -> new Thread(new HouseThread(socket,this)).start());
         using_water(host,port);
     }
 
     public boolean test_connection(String office_host, int office_port){
-        try{
-            Socket socket = new Socket(office_host,office_port);
-            return true;
-        }catch (IOException e){
-            return false;
-        }
+        return SocketHandler.testConnection(office_port,office_host);
     }
 
     @Override
@@ -84,20 +72,10 @@ public class House implements IHouse{
 
     public void order_tanker(String host, int port){
         if(current_volume>=0.8*max_volume){
-            try{
-                Socket socket = new Socket(office_host, office_port);
-                OutputStream out = socket.getOutputStream();
-                PrintWriter pw = new PrintWriter(out, true);
-                InputStream inputStream = socket.getInputStream();
-                InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-
-                String request = "o:"+host+","+port;
-                pw.println(request);
-                String response = bufferedReader.readLine();
+            String request = "o:"+host+","+port;
+            String response = SocketHandler.sendRequest(office_host,office_port,request);
+            if(response!=null){
                 ordered = Integer.parseInt(response);
-            } catch (IOException e){
-                e.printStackTrace();
             }
         }
     }
@@ -144,7 +122,6 @@ class HouseThread implements Runnable{
                 int pumped_out_vol = house.getPumpOut(max_vol);
                 pw.println(pumped_out_vol);
             }
-
         } catch (IOException e) {
             e.printStackTrace();
         } finally {

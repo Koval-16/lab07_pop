@@ -9,15 +9,7 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <dependencies>
-        <dependency>
-            <groupId>ite.kubak</groupId>
-            <artifactId>communication</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-    </dependencies>
-
-    <artifactId>sewageplant</artifactId>
+    <artifactId>communication</artifactId>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>

@@ -1,4 +1,6 @@
 package ite.kubak.model;
+import ite.kubak.sockets.SocketHandler;
+
 import java.io.*;
 import java.net.*;
 import java.util.HashMap;
@@ -10,19 +12,10 @@ public class SewagePlant implements ISewagePlant {
     int port;
     private String host;
 
-    public void start(int port){
+    public void start(int port, String host){
         this.port = port;
-        new Thread(()->{
-            try {
-                ServerSocket serverSocket = new ServerSocket(port);
-                while (true) {
-                    Socket clientSocket = serverSocket.accept();
-                    new Thread(new SewagePlantThread(clientSocket,this)).start();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }).start();
+        this.host = host;
+        SocketHandler.startServer(port,host, socket -> new Thread(new SewagePlantThread(socket,this)).start());
     }
 
     @Override

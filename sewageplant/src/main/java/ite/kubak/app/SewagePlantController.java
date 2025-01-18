@@ -10,6 +10,7 @@ import javafx.scene.control.TextField;
 public class SewagePlantController {
 
     @FXML private TextField port;
+    @FXML private TextField host;
     @FXML private Button button;
     private SewagePlantListener listener = new SewagePlantListener();
 
@@ -17,8 +18,9 @@ public class SewagePlantController {
     public void button_clicked(){
         try{
             int port_number = Integer.parseInt(port.getText());
+            String host_sewage = host.getText();
             if(port_number<0 || port_number>65535) throw new IllegalArgumentException();
-            listener.start(Integer.parseInt(port.getText()));
+            listener.start(port_number,host_sewage);
             button.setDisable(true);
             port.setDisable(true);
         } catch (Exception e){

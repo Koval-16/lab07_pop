@@ -1,6 +1,9 @@
 package ite.kubak.model;
 
+import ite.kubak.sockets.SocketHandler;
+
 import java.io.*;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -20,26 +23,11 @@ public class Office implements IOffice{
         this.sewage_host = sewage_host;
         this.sewage_port = sewage_port;
         this.port = port;
-        new Thread(()->{
-            try{
-                ServerSocket serverSocket = new ServerSocket(port);
-                while(true){
-                    Socket clientSocket = serverSocket.accept();
-                    new Thread(new OfficeThread(clientSocket,this)).start();
-                }
-            } catch (IOException e){
-                e.printStackTrace();
-            }
-        }).start();
+        SocketHandler.startServer(port,sewage_host, socket -> new Thread(new OfficeThread(socket,this)).start());
     }
 
     public boolean test_sewage_connection(String sewage_host, int sewage_port){
-        try{
-            Socket socket = new Socket(sewage_host,sewage_port);
-            return true;
-        } catch (IOException e){
-            return false;
-        }
+        return SocketHandler.testConnection(sewage_port,sewage_host);
     }
 
     @Override
@@ -64,37 +52,15 @@ public class Office implements IOffice{
     }
 
     public int get_tanker_status(int number){
-        try{
-            Socket socket = new Socket(sewage_host, sewage_port);
-            OutputStream out = socket.getOutputStream();
-            PrintWriter pw = new PrintWriter(out, true);
-            InputStream inputStream = socket.getInputStream();
-            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-            String request = "gs:"+number;
-            pw.println(request);
-            String response = bufferedReader.readLine();
-            int status = Integer.parseInt(response);
-            return status;
-        }catch (IOException e){
-            e.printStackTrace();
-            return 0;
-        }
+        String request = "gs:"+number;
+        String response = SocketHandler.sendRequest(sewage_host,sewage_port,request);
+        if(response!=null) return Integer.parseInt(response);
+        else return 0;
     }
 
     public void pay_to_tanker(int number){
-        try{
-            Socket socket = new Socket(sewage_host, sewage_port);
-            OutputStream out = socket.getOutputStream();
-            PrintWriter pw = new PrintWriter(out, true);
-            InputStream inputStream = socket.getInputStream();
-            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-            String request = "spo:"+number;
-            pw.println(request);
-        }catch (IOException e){
-            e.printStackTrace();
-        }
+        String request = "spo:"+number;
+        SocketHandler.sendRequest(sewage_host,sewage_port,request);
     }
 
     private RegisteredInfo get_tanker_info(int number){
@@ -102,29 +68,17 @@ public class Office implements IOffice{
     }
 
     public void set_job_to_tanker(String house_host, int house_port, String tanker_host, int tanker_port){
-        try{
-            Socket socket = new Socket(tanker_host, tanker_port);
-            OutputStream out = socket.getOutputStream();
-            PrintWriter pw = new PrintWriter(out, true);
-            InputStream inputStream = socket.getInputStream();
-            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-            String request = "sj:"+house_host+","+house_port;
-            pw.println(request);
+        String request = "sj:"+house_host+","+house_port;
+        String response = SocketHandler.sendRequest(tanker_host,tanker_port,request);
+        if(response!=null){
             List<HouseInfo> toRemove = new ArrayList<>();
             for (HouseInfo info : orders) {
                 if (info.getHost().equals(house_host) && info.getPort() == house_port) toRemove.add(info);
             }
             orders.removeAll(toRemove);
-            System.out.println("Tankers: " + tankers);
             for(RegisteredInfo info : tankers.values()){
-                if(info.getHost().equals(tanker_host) && info.getPort()==tanker_port){
-                    info.setReady(0);
-                    System.out.println("ACB");
-                }
+                if(info.getHost().equals(tanker_host) && info.getPort()==tanker_port) info.setReady(0);
             }
-        }catch (IOException e){
-            e.printStackTrace();
         }
     }
 

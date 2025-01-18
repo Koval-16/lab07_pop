@@ -1,5 +1,7 @@
 package ite.kubak.model;
 
+import ite.kubak.sockets.SocketHandler;
+
 import java.io.*;
 import java.net.*;
 
@@ -24,27 +26,14 @@ public class Tanker implements ITanker {
         this.sewage_host = sewage_host;
         this.sewage_port = sewage_port;
         this.office_port = office_port;
-        new Thread(()->{
-            try{
-                ServerSocket serverSocket = new ServerSocket(port);
-                while(true){
-                    Socket clientSocket = serverSocket.accept();
-                    new Thread(new TankerThread(clientSocket,this)).start();
-                }
-            } catch (IOException e){
-                e.printStackTrace();
-            }
-        }).start();
+        SocketHandler.startServer(port,host, socket -> new Thread(new TankerThread(socket,this)).start());
     }
 
     public boolean test_connection(String sewage_host, int sewage_port, int office_port){
-        try{
-            Socket socket1 = new Socket(sewage_host,sewage_port);
-            Socket socket2 = new Socket(sewage_host,office_port);
-            return true;
-        } catch (IOException e){
-            return false;
-        }
+        boolean result;
+        result = SocketHandler.testConnection(sewage_port,sewage_host);
+        if(result) result = SocketHandler.testConnection(office_port,sewage_host);
+        return result;
     }
 
     @Override
@@ -58,61 +47,29 @@ public class Tanker implements ITanker {
     }
 
     public void useSewagePlant() {
-        try (Socket socket = new Socket(sewage_host, sewage_port);
-             OutputStream out = socket.getOutputStream();
-             PrintWriter pw = new PrintWriter(out, true);
-             BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
-            String request = "spi:" + number + "," + volume;
-            pw.println(request);
-            String response = br.readLine();
-            volume = Integer.parseInt(response);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        String request = "spi:" + number + "," + volume;
+        String response = SocketHandler.sendRequest(sewage_host,sewage_port,request);
+        if(response!=null) volume = Integer.parseInt(response);
     }
 
     public void register_to_office(){
-        try (Socket socket = new Socket(sewage_host, office_port);
-             OutputStream out = socket.getOutputStream();
-             PrintWriter pw = new PrintWriter(out, true);
-             BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
-            String request = "r:" + host + "," + port;
-            pw.println(request);
-            String response = br.readLine();
-            number = Integer.parseInt(response);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        String request = "r:" + host + "," + port;
+        String response = SocketHandler.sendRequest(sewage_host,office_port,request);
+        if(response!=null) number = Integer.parseInt(response);
     }
 
     public void set_readiness(){
-        try (Socket socket = new Socket(sewage_host, office_port);
-             OutputStream out = socket.getOutputStream();
-             PrintWriter pw = new PrintWriter(out, true);
-             BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
-            String request = "sr:" + number;
-            pw.println(request);
-            ready = true;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        String request = "sr:" + number;
+        String response = SocketHandler.sendRequest(sewage_host,office_port,request);
+        if(response!=null) ready=true;
     }
 
     public void pump_out_house(String house_host, int house_port){
-        try{
-            Socket socket = new Socket(house_host, house_port);
-            OutputStream out = socket.getOutputStream();
-            PrintWriter pw = new PrintWriter(out, true);
-            InputStream inputStream = socket.getInputStream();
-            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-            String request = "gp:"+(max_volume-volume);
-            pw.println(request);
-            String response = bufferedReader.readLine();
+        String request = "gp:"+(max_volume-volume);
+        String response = SocketHandler.sendRequest(house_host,house_port,request);
+        if(response!=null){
             volume += Integer.parseInt(response);
             ready = false;
-        } catch (IOException e){
-            e.printStackTrace();
         }
     }
 
