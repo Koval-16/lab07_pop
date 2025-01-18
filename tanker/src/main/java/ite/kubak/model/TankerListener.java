@@ -19,7 +19,8 @@ public class TankerListener {
         tanker.set_readiness();
     }
 
-    public void pump_out_house(){
+    public boolean getWay(){
+        return tanker.getWay();
     }
 
     public void use_sewage_plant(){

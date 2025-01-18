@@ -4,6 +4,7 @@ import ite.kubak.sockets.SocketHandler;
 
 import java.io.*;
 import java.net.*;
+import java.util.Random;
 
 public class Tanker implements ITanker {
     private int number;
@@ -15,12 +16,14 @@ public class Tanker implements ITanker {
     private int sewage_port;
     private int office_port;
     private boolean ready;
+    private boolean onWay;
 
 
     public void start(int max_volume, String host, int port, String sewage_host, int sewage_port, int office_port){
         this.max_volume = max_volume;
         volume = 0;
         ready = false;
+        onWay = false;
         this.host = host;
         this.port = port;
         this.sewage_host = sewage_host;
@@ -38,18 +41,25 @@ public class Tanker implements ITanker {
 
     @Override
     public void setJob(String host, int port){
+        onWay = true;
+        Random random = new Random();
         try{
-            Thread.sleep(1000);
+            Thread.sleep(random.nextInt(5000)+2500);
             pump_out_house(host,port);
+            onWay = false;
         }catch (InterruptedException e){
             e.printStackTrace();
         }
     }
 
     public void useSewagePlant() {
+        ready = true;
         String request = "spi:" + number + "," + volume;
         String response = SocketHandler.sendRequest(sewage_host,sewage_port,request);
-        if(response!=null) volume = Integer.parseInt(response);
+        if(response!=null){
+            volume = Integer.parseInt(response);
+            ready = false;
+        }
     }
 
     public void register_to_office(){
@@ -84,6 +94,9 @@ public class Tanker implements ITanker {
     public boolean getReady(){
         return ready;
     }
+    public boolean getWay(){
+        return onWay;
+    }
 }
 
 class TankerThread implements Runnable{
@@ -109,6 +122,7 @@ class TankerThread implements Runnable{
                 String host = parts[0];
                 int port = Integer.parseInt(parts[1]);
                 tanker.setJob(host,port);
+                pw.println("ok");
             }
         } catch (IOException e) {
             e.printStackTrace();

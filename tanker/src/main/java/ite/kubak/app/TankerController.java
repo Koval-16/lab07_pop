@@ -19,7 +19,10 @@ public class TankerController {
     @FXML private Button goto_sewage_button;
     @FXML private ProgressBar progress;
     @FXML private Label percentage;
+    @FXML private Label sewage;
+    @FXML private Label house;
     private TankerListener listener = new TankerListener();
+
 
     @FXML
     public void ok_button_clicked(){
@@ -70,13 +73,14 @@ public class TankerController {
     }
 
     @FXML
-    public void do_button_clicked(){
-        listener.pump_out_house();
-    }
-
-    @FXML
     public void goto_sewage_button_clicked(){
-        listener.use_sewage_plant();
+        sewage.setText("W drodze do oczyszczalni");
+        new Thread(() -> {
+            listener.use_sewage_plant();
+            Platform.runLater(() -> {
+                sewage.setText("");
+            });
+        }).start();
     }
 
     private void startProgressBarUpdate() {
@@ -98,6 +102,8 @@ public class TankerController {
                         goto_sewage_button.setDisable(false);
                         ready_button.setDisable(false);
                     }
+                    if(listener.getWay()) house.setText("W drodze na zlecenie.");
+                    else house.setText("");
                 } );
             }
         }).start();

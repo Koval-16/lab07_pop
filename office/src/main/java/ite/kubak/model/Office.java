@@ -3,8 +3,6 @@ package ite.kubak.model;
 import ite.kubak.sockets.SocketHandler;
 
 import java.io.*;
-import java.net.InetAddress;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -61,10 +59,6 @@ public class Office implements IOffice{
     public void pay_to_tanker(int number){
         String request = "spo:"+number;
         SocketHandler.sendRequest(sewage_host,sewage_port,request);
-    }
-
-    private RegisteredInfo get_tanker_info(int number){
-        return tankers.get(number);
     }
 
     public void set_job_to_tanker(String house_host, int house_port, String tanker_host, int tanker_port){
@@ -126,6 +120,7 @@ class OfficeThread implements Runnable{
             else if(request.startsWith("sr:")){
                 int number = Integer.parseInt(request.substring(3));
                 office.setReadyToServe(number);
+                pw.println("ready");
             }
         } catch (IOException e) {
             e.printStackTrace();

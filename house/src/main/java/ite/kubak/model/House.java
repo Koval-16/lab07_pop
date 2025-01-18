@@ -3,8 +3,6 @@ package ite.kubak.model;
 import ite.kubak.sockets.SocketHandler;
 
 import java.io.*;
-import java.net.InetAddress;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Random;
 

@@ -23,6 +23,7 @@ public class SewagePlantController {
             listener.start(port_number,host_sewage);
             button.setDisable(true);
             port.setDisable(true);
+            host.setDisable(true);
         } catch (Exception e){
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("NIEPOPRAWNY PORT");

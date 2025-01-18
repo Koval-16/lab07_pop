@@ -9,7 +9,6 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <modules>
-        <module>testing</module>
         <module>house</module>
         <module>office</module>
         <module>tanker</module>

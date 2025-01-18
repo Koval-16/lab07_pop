@@ -5,6 +5,7 @@ import java.io.*;
 import java.net.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 public class SewagePlant implements ISewagePlant {
 
@@ -20,8 +21,9 @@ public class SewagePlant implements ISewagePlant {
 
     @Override
     public int setPumpIn(int number, int volume) {
+        Random random = new Random();
         try {
-            Thread.sleep(1000);
+            Thread.sleep(random.nextInt(5000)+2500);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

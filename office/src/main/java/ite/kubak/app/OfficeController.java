@@ -85,7 +85,6 @@ public class OfficeController {
                 Platform.runLater(() -> {
                     tankersList.setAll(listener.get_tankers_to_table());
                     ordersList.setAll(listener.get_orders());
-                    initialize();
                 });
             }
         }).start();
