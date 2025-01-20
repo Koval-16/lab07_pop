@@ -10,7 +10,7 @@
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="671.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ite.kubak.app.OfficeController">
    <children>
       <TextField fx:id="office_field" layoutX="31.0" layoutY="32.0" text="1444" />
-      <TextField fx:id="host_field" layoutX="30.0" layoutY="71.0" text="localhost" />
+      <TextField fx:id="host_field" layoutX="30.0" layoutY="71.0" text="127.0.0.1" />
       <TextField fx:id="port_field" layoutX="32.0" layoutY="113.0" text="2137" />
       <Label layoutX="31.0" layoutY="14.0" text="Port biura" />
       <Label layoutX="30.0" layoutY="54.0" text="Host oczyszczalni" />

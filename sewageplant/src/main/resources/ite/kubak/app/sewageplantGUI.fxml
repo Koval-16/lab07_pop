@@ -18,6 +18,6 @@
           <TableColumn prefWidth="75.0" text="C2" />
         </columns>
       </TableView>
-      <TextField fx:id="host" layoutX="25.0" layoutY="74.0" text="localhost" />
+      <TextField fx:id="host" layoutX="25.0" layoutY="74.0" text="127.0.0.1" />
    </children>
 </AnchorPane>
