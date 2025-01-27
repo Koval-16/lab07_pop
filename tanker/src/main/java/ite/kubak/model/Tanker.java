@@ -1,51 +1,67 @@
 package ite.kubak.model;
 
-import ite.kubak.sockets.SocketHandler;
-
-import java.io.*;
-import java.net.*;
+import interfaces.IHouse;
+import interfaces.IOffice;
+import interfaces.ISewagePlant;
+import interfaces.ITanker;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.Random;
 
-public class Tanker implements ITanker {
+public class Tanker  implements ITanker {
     private int number;
     private int volume;
     private int max_volume;
     private int port;
-    private String host;
-    private String sewage_host;
-    private int sewage_port;
-    private int office_port;
+    private String name;
+    private String name_sewage;
+    private String name_office;
+    private int port_tailor;
+    private String host_tailor;
     private boolean ready;
     private boolean onWay;
 
-
-    public void start(int max_volume, String host, int port, String sewage_host, int sewage_port, int office_port){
+    public void start(int max_volume,int port,String name,String name_office,String name_sewage, int port_tailor,String host_tailor){
         this.max_volume = max_volume;
         volume = 0;
         ready = false;
         onWay = false;
-        this.host = host;
+        this.name = name;
         this.port = port;
-        this.sewage_host = sewage_host;
-        this.sewage_port = sewage_port;
-        this.office_port = office_port;
-        SocketHandler.startServer(port,host, socket -> new Thread(new TankerThread(socket,this)).start());
+        this.name_office = name_office;
+        this.name_sewage = name_sewage;
+        this.port_tailor = port_tailor;
+        this.host_tailor = host_tailor;
+        try{
+            ITanker io = (ITanker) UnicastRemoteObject.exportObject(this,port);
+            Registry registry = LocateRegistry.getRegistry(host_tailor,port_tailor);
+            registry.rebind(name,io);
+        } catch (RemoteException e){
+            e.printStackTrace();
+        }
     }
 
-    public boolean test_connection(String sewage_host, int sewage_port, int office_port){
-        boolean result;
-        result = SocketHandler.testConnection(sewage_port,sewage_host);
-        if(result) result = SocketHandler.testConnection(office_port,sewage_host);
-        return result;
+    public boolean testConnection(String host_tailor,int port_tailor,String name_sewage, String name_office){
+        try{
+            Registry registry = LocateRegistry.getRegistry(host_tailor,port_tailor);
+            registry.list();
+            ISewagePlant sewagePlant = (ISewagePlant) registry.lookup(name_sewage);
+            IOffice office = (IOffice) registry.lookup(name_office);
+            return (sewagePlant!=null)&&(office!=null);
+        } catch (Exception e){
+            return false;
+        }
     }
 
     @Override
-    public void setJob(String host, int port){
+    public void setJob(IHouse house) throws RemoteException {
         onWay = true;
         Random random = new Random();
         try{
             Thread.sleep(random.nextInt(5000)+2500);
-            pump_out_house(host,port);
+            pump_out_house(house); //popraw
             onWay = false;
         }catch (InterruptedException e){
             e.printStackTrace();
@@ -54,32 +70,48 @@ public class Tanker implements ITanker {
 
     public void useSewagePlant() {
         ready = true;
-        String request = "spi:" + number + "," + volume;
-        String response = SocketHandler.sendRequest(sewage_host,sewage_port,request);
-        if(response!=null){
-            volume = Integer.parseInt(response);
+        try{
+            Registry r = LocateRegistry.getRegistry(port_tailor);
+            ISewagePlant sewagePlant = (ISewagePlant) r.lookup(name_sewage);
+            sewagePlant.setPumpIn(number,volume);
+            volume = 0;
             ready = false;
+        } catch (Exception e){
+            e.printStackTrace();
         }
     }
 
     public void register_to_office(){
-        String request = "r:" + host + "," + port;
-        String response = SocketHandler.sendRequest(sewage_host,office_port,request);
-        if(response!=null) number = Integer.parseInt(response);
+        try{
+            Registry r = LocateRegistry.getRegistry(port_tailor);
+            IOffice office = (IOffice) r.lookup(name_office);
+            int response = office.register(this,name);
+            number = response;
+        } catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     public void set_readiness(){
-        String request = "sr:" + number;
-        String response = SocketHandler.sendRequest(sewage_host,office_port,request);
-        if(response!=null) ready=true;
+        try{
+            Registry r = LocateRegistry.getRegistry(port_tailor);
+            IOffice office = (IOffice) r.lookup(name_office);
+            office.setReadyToServe(number);
+            ready=true;
+        } catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
-    public void pump_out_house(String house_host, int house_port){
-        String request = "gp:"+(max_volume-volume);
-        String response = SocketHandler.sendRequest(house_host,house_port,request);
-        if(response!=null){
-            volume += Integer.parseInt(response);
+    public void pump_out_house(IHouse house){ //popraw
+        try{
+            //Registry r = LocateRegistry.getRegistry(2000);
+            //IHouse house = (IHouse) r.lookup(house_name);
+            int pumped_out = house.getPumpOut(max_volume-volume);
+            volume += pumped_out;
             ready = false;
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 
@@ -96,42 +128,5 @@ public class Tanker implements ITanker {
     }
     public boolean getWay(){
         return onWay;
-    }
-}
-
-class TankerThread implements Runnable{
-    private Socket socket;
-    Tanker tanker;
-
-    public TankerThread(Socket socket, Tanker tanker){
-        this.socket = socket;
-        this.tanker = tanker;
-    }
-
-    @Override
-    public void run(){
-        try{
-            InputStream inputStream = socket.getInputStream();
-            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-            OutputStream outputStream = socket.getOutputStream();
-            PrintWriter pw = new PrintWriter(outputStream,true);
-            String request = bufferedReader.readLine();
-            if (request.startsWith("sj:")) {
-                String[] parts = request.substring(3).split(",");
-                String host = parts[0];
-                int port = Integer.parseInt(parts[1]);
-                tanker.setJob(host,port);
-                pw.println("ok");
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                socket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
     }
 }

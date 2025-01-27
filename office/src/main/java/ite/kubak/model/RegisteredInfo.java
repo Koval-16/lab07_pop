@@ -1,14 +1,16 @@
 package ite.kubak.model;
 
+import interfaces.ITanker;
+
 public class RegisteredInfo {
+    private ITanker tanker;
     private int number;
-    private String host;
-    private int port;
+    private String rmi_name;
     private int ready;
 
-    public RegisteredInfo(int port, String host, int number, int ready){
-        this.host = host;
-        this.port = port;
+    public RegisteredInfo(ITanker tanker,String rmi_name, int number, int ready){
+        this.tanker = tanker;
+        this.rmi_name = rmi_name;
         this.number = number;
         this.ready = ready;
     }
@@ -17,29 +19,22 @@ public class RegisteredInfo {
         return number;
     }
 
-    public int getPort() {
-        return port;
-    }
 
     public int getReady() {
         return ready;
     }
 
-    public String getHost() {
-        return host;
+    public String getRmi_name(){
+        return rmi_name;
     }
 
     public void setReady(int ready){
         this.ready = ready;
     }
 
-    @Override
-    public String toString() {
-        return "RegisteredInfo{" +
-                "number=" + number +
-                ", host='" + host + '\'' +
-                ", port=" + port +
-                ", ready=" + ready +
-                '}';
+    public ITanker getTanker() {
+        return tanker;
     }
+
+
 }

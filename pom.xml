@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>ite.kubak</groupId>
-    <artifactId>lab06_pop</artifactId>
+    <artifactId>laby7</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <modules>
@@ -14,6 +14,7 @@
         <module>tanker</module>
         <module>sewageplant</module>
         <module>communication</module>
+        <module>tailor</module>
     </modules>
 
     <dependencies>

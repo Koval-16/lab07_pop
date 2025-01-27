@@ -8,18 +8,17 @@
 
 <AnchorPane prefHeight="400.0" prefWidth="434.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ite.kubak.app.TankerController">
    <children>
-      <TextField fx:id="tanker_port" layoutX="24.0" layoutY="25.0" text="1111" />
-      <TextField fx:id="tanker_host" layoutX="24.0" layoutY="79.0" text="127.0.0.1" />
-      <TextField fx:id="office_port" layoutX="24.0" layoutY="132.0" text="1444" />
-      <TextField fx:id="sewage_port" layoutX="24.0" layoutY="188.0" text="2137" />
-      <TextField fx:id="sewage_host" layoutX="24.0" layoutY="241.0" text="127.0.0.1" />
+      <TextField fx:id="tanker_port" layoutX="24.0" layoutY="25.0" text="4722" />
+      <TextField fx:id="tanker_name" layoutX="24.0" layoutY="79.0" text="Tanker" />
+      <TextField fx:id="office_name" layoutX="24.0" layoutY="132.0" text="Office" />
+      <TextField fx:id="sewage_name" layoutX="24.0" layoutY="169.0" text="SewagePlant" />
+      <TextField fx:id="tailor_host" layoutX="22.0" layoutY="254.0" text="localhost" />
       <Label layoutX="24.0" layoutY="6.0" text="Port cysterny" />
       <Label layoutX="24.0" layoutY="62.0" text="Host cysterny" />
       <Label layoutX="24.0" layoutY="115.0" text="Port biura" />
-      <Label layoutX="24.0" layoutY="171.0" text="Port oczyszcalni" />
-      <Label layoutX="24.0" layoutY="224.0" text="Host oczyszcalni" />
-      <TextField fx:id="max_volume" layoutX="24.0" layoutY="292.0" text="500" />
-      <Label layoutX="24.0" layoutY="275.0" text="Pojemnosc cysterny" />
+      <Label layoutX="23.0" layoutY="238.0" text="Host oczyszcalni" />
+      <TextField fx:id="max_volume" layoutX="24.0" layoutY="299.0" text="500" />
+      <Label layoutX="25.0" layoutY="284.0" text="Pojemnosc cysterny" />
       <Button fx:id="ok_button" layoutX="25.0" layoutY="330.0" mnemonicParsing="false" onAction="#ok_button_clicked" prefHeight="25.0" prefWidth="149.0" text="OK" />
       <Button fx:id="register_button" disable="true" layoutX="227.0" layoutY="23.0" mnemonicParsing="false" onAction="#register_button_clicked" text="REJESTRUJ" />
       <Button fx:id="ready_button" disable="true" layoutX="227.0" layoutY="79.0" mnemonicParsing="false" onAction="#ready_button_clicked" prefHeight="25.0" prefWidth="72.0" text="GOTOWY" />
@@ -28,5 +27,8 @@
       <Label fx:id="percentage" layoutX="285.0" layoutY="275.0" />
       <Label fx:id="sewage" layoutX="259.0" layoutY="216.0" />
       <Label fx:id="house" layoutX="249.0" layoutY="115.0" />
+      <TextField fx:id="tailor_port" layoutX="24.0" layoutY="212.0" text="2000" />
+      <Label layoutX="25.0" layoutY="157.0" text="Label" />
+      <Label layoutX="25.0" layoutY="192.0" text="Label" />
    </children>
 </AnchorPane>

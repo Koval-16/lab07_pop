@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>ite.kubak</groupId>
-        <artifactId>lab06_pop</artifactId>
+        <artifactId>laby7</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
 
@@ -13,6 +13,11 @@
         <dependency>
             <groupId>ite.kubak</groupId>
             <artifactId>communication</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>pl.edu.pwr.tkubik.jp</groupId>
+            <artifactId>sewagelib</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>

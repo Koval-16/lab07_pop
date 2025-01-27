@@ -5,11 +5,19 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>ite.kubak</groupId>
-        <artifactId>lab06_pop</artifactId>
+        <artifactId>laby7</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>tailor</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>pl.edu.pwr.tkubik.jp</groupId>
+            <artifactId>sewagelib</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>

@@ -1,5 +1,7 @@
 package ite.kubak.app;
 
+import interfaces.IHouse;
+import interfaces.ITanker;
 import ite.kubak.model.HouseInfo;
 import ite.kubak.model.OfficeListener;
 import ite.kubak.model.RegisteredInfo;
@@ -12,21 +14,23 @@ import javafx.scene.control.cell.PropertyValueFactory;
 
 public class OfficeController {
 
-    @FXML private TextField office_field;
-    @FXML private TextField host_field;
-    @FXML private TextField port_field;
+    @FXML private TextField office_port;
+    @FXML private TextField office_name;
+    @FXML private TextField sewage_name;
+    @FXML private TextField tailor_port;
+    @FXML private TextField tailor_host;
     @FXML private Button ok_button;
     @FXML private TableView<RegisteredInfo> tankers;
     @FXML private TableColumn<RegisteredInfo, Integer> numberColumn;
-    @FXML private TableColumn<RegisteredInfo, String> hostColumn;
-    @FXML private TableColumn<RegisteredInfo, Integer> portColumn;
+    @FXML private TableColumn<RegisteredInfo, String> nameColumn;
+    @FXML private TableColumn<RegisteredInfo, ITanker> tankerColumn;
     @FXML private TableColumn<RegisteredInfo, Integer> readyColumn;
     @FXML private Button check_button;
     @FXML private Button pay_button;
     @FXML private Button givejob_button;
     @FXML private TableView<HouseInfo> orders;
-    @FXML private TableColumn<HouseInfo, String> orderHost;
-    @FXML private TableColumn<HouseInfo, Integer> orderPort;
+    @FXML private TableColumn<HouseInfo, IHouse> orderHouse;
+    @FXML private TableColumn<HouseInfo, String> orderName;
     private ObservableList<RegisteredInfo> tankersList = FXCollections.observableArrayList(); // Lista obserwowalna
     private ObservableList<HouseInfo> ordersList = FXCollections.observableArrayList();
 
@@ -34,28 +38,31 @@ public class OfficeController {
 
     @FXML
     public void ok_button_clicked(){
-        String sewage_host = host_field.getText();
         try{
-            int sewage_port = Integer.parseInt(port_field.getText());
-            int port = Integer.parseInt(office_field.getText());
-            if(port<0 || port>65535) throw new IllegalArgumentException();
-            if(sewage_port<0 || sewage_port>65535) throw new IllegalArgumentException();
-            if(listener.start(sewage_host, sewage_port, port)){
-                update_table();
-                pay_button.setDisable(false);
-                check_button.setDisable(false);
-                givejob_button.setDisable(false);
-                ok_button.setDisable(true);
-                office_field.setDisable(true);
-                host_field.setDisable(true);
-                port_field.setDisable(true);
-            }
-            else throw new IllegalArgumentException();
+            int port_office = Integer.parseInt(office_port.getText());
+            String name_office = office_name.getText();
+            String name_sewage = sewage_name.getText();
+            int port_tailor = Integer.parseInt(tailor_port.getText());
+            String name_tailor = tailor_host.getText();
+            if(port_office<0 || port_office>65535) throw new IllegalArgumentException();
+            if(port_tailor<0 || port_tailor>65535) throw new IllegalArgumentException();
+            if(!listener.testConnection(name_tailor,port_tailor,name_sewage)) throw new RuntimeException();
+            listener.start(port_office,name_office,name_sewage,port_tailor,name_tailor);
+            update_table();
+            pay_button.setDisable(false);
+            check_button.setDisable(false);
+            givejob_button.setDisable(false);
+            office_port.setDisable(true);
+            office_name.setDisable(true);
+            sewage_name.setDisable(true);
+            tailor_port.setDisable(true);
+            tailor_host.setDisable(true);
+            ok_button.setDisable(true);
         } catch (Exception e){
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("NIEPOPRAWNE DANE");
             alert.setHeaderText("Wprowadzono niepoprawne dane portu lub hosta");
-            alert.setContentText("Upewnij się, że porty to liczba od 0 do 65535, oraz że istnieje Oczyszczalnia o danym porcie");
+            alert.setContentText("Sprawdź wprowadzone dane");
             alert.showAndWait();
         }
 
@@ -64,13 +71,13 @@ public class OfficeController {
     @FXML
     public void initialize() {
         numberColumn.setCellValueFactory(new PropertyValueFactory<>("number"));
-        hostColumn.setCellValueFactory(new PropertyValueFactory<>("host"));
-        portColumn.setCellValueFactory(new PropertyValueFactory<>("port"));
+        nameColumn.setCellValueFactory(new PropertyValueFactory<>("rmi_name"));
+        tankerColumn.setCellValueFactory(new PropertyValueFactory<>("tanker"));
         readyColumn.setCellValueFactory(new PropertyValueFactory<>("ready"));
         tankers.setItems(tankersList);
 
-        orderHost.setCellValueFactory(new PropertyValueFactory<>("host"));
-        orderPort.setCellValueFactory(new PropertyValueFactory<>("port"));
+        orderHouse.setCellValueFactory(new PropertyValueFactory<>("house"));
+        orderName.setCellValueFactory(new PropertyValueFactory<>("rmi_name"));
         orders.setItems(ordersList);
     }
 
@@ -120,7 +127,7 @@ public class OfficeController {
         RegisteredInfo selected_tanker = tankers.getSelectionModel().getSelectedItem();
         HouseInfo selected_task = orders.getSelectionModel().getSelectedItem();
         if(selected_task!=null && selected_tanker!=null && selected_tanker.getReady()==1){
-            listener.set_job_to_tanker(selected_task.getHost(),selected_task.getPort(),selected_tanker.getHost(),selected_tanker.getPort());
+            listener.set_job_to_tanker(selected_task.getHouse(),selected_tanker.getRmi_name());
         }
     }
 

@@ -8,10 +8,11 @@ import javafx.scene.control.*;
 public class TankerController {
 
     @FXML private TextField tanker_port;
-    @FXML private TextField tanker_host;
-    @FXML private TextField office_port;
-    @FXML private TextField sewage_port;
-    @FXML private TextField sewage_host;
+    @FXML private TextField tanker_name;
+    @FXML private TextField office_name;
+    @FXML private TextField sewage_name;
+    @FXML private TextField tailor_port;
+    @FXML private TextField tailor_host;
     @FXML private TextField max_volume;
     @FXML private Button ok_button;
     @FXML private Button register_button;
@@ -28,33 +29,32 @@ public class TankerController {
     public void ok_button_clicked(){
         try{
             int max_value = Integer.parseInt(max_volume.getText());
-            String host = tanker_host.getText();
             int port = Integer.parseInt(tanker_port.getText());
-            String host_sewage = sewage_host.getText();
-            int port_sewage = Integer.parseInt(sewage_port.getText());
-            int port_office = Integer.parseInt(office_port.getText());
-            if(port<0 || port>65535) throw new IllegalArgumentException();
-            if(port_sewage<0 || port_sewage>65535) throw new IllegalArgumentException();
-            if(port_office<0 || port_office>65535) throw new IllegalArgumentException();
+            int port_tailor = Integer.parseInt(tailor_port.getText());
+            String name_tanker = tanker_name.getText();
+            String name_office = office_name.getText();
+            String name_sewage = sewage_name.getText();
+            String host_tailor = tailor_host.getText();
             if(max_value<=0) throw new IllegalArgumentException();
-            if(listener.start(max_value, host, port, host_sewage, port_sewage, port_office)){
-                tanker_port.setDisable(true);
-                tanker_host.setDisable(true);
-                office_port.setDisable(true);
-                sewage_host.setDisable(true);
-                sewage_port.setDisable(true);
-                max_volume.setDisable(true);
-                ok_button.setDisable(true);
-                register_button.setDisable(false);
-                startProgressBarUpdate();
-            }
-            else throw new IllegalArgumentException();
+            if(port<0 || port>65535) throw new IllegalArgumentException();
+            if(port_tailor<0 || port_tailor>65535) throw new IllegalArgumentException();
+            if(!listener.testConnection(host_tailor,port_tailor,name_sewage,name_office)) throw new RuntimeException();
+            listener.start(max_value,port,name_tanker,name_office,name_sewage,port_tailor,host_tailor);
+            tanker_port.setDisable(true);
+            max_volume.setDisable(true);
+            tailor_port.setDisable(true);
+            tanker_name.setDisable(true);
+            office_name.setDisable(true);
+            sewage_name.setDisable(true);
+            tailor_host.setDisable(true);
+            ok_button.setDisable(true);
+            register_button.setDisable(false);
+            startProgressBarUpdate();
         } catch (Exception e){
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("NIEPOPRAWNE DANE");
             alert.setHeaderText("Wprowadzono niepoprawne dane portu lub hosta");
-            alert.setContentText("Upewnij się, że porty to liczba od 0 do 65535, oraz że istnieją" +
-                    "Oczyszcalnia oraz Biuro o danym porcie. Pojemność cysterny musi być liczbą naturalną >0");
+            alert.setContentText("Sprawdź wprowadzone dane");
             alert.showAndWait();
         }
     }

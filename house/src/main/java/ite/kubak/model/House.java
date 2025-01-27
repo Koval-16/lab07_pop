@@ -1,39 +1,57 @@
 package ite.kubak.model;
 
-import ite.kubak.sockets.SocketHandler;
-
-import java.io.*;
-import java.net.Socket;
+import interfaces.IHouse;
+import interfaces.IOffice;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.Random;
 
-public class House implements IHouse{
+public class House implements IHouse {
 
     private int port;
+    private String rmi_name;
     private String host;
     private int max_volume;
     private int current_volume;
     private boolean using;
     private int ordered;
-    private String office_host;
-    private int office_port;
+    private String name_office;
+    private int port_tailor;
+    private String host_tailor;
 
-    public void start(String host, int port, int max_volume, String office_host, int office_port){
-        this.host = host;
+    public void start(int port,String rmi_name,int max_volume,String name_office,int port_tailor, String host_tailor){
+        this.rmi_name=rmi_name;
         this.port = port;
         this.max_volume = max_volume;
         this.current_volume = 0;
-        this.office_host = office_host;
-        this.office_port = office_port;
-        SocketHandler.startServer(port,host,socket -> new Thread(new HouseThread(socket,this)).start());
-        using_water(host,port);
+        this.name_office = name_office;
+        this.port_tailor = port_tailor;
+        this.host_tailor = host_tailor;
+        try{
+            IHouse io = (IHouse) UnicastRemoteObject.exportObject(this,port);
+            Registry registry = LocateRegistry.getRegistry(host_tailor,port_tailor);
+            registry.rebind(rmi_name,io);
+        } catch (RemoteException e){
+            e.printStackTrace();
+        }
+        using_water();
     }
 
-    public boolean test_connection(String office_host, int office_port){
-        return SocketHandler.testConnection(office_port,office_host);
+    public boolean testConnection(String host, int port_tailor,String name_office){
+        try{
+            Registry registry = LocateRegistry.getRegistry(host,port_tailor);
+            registry.list();
+            IOffice office = (IOffice) registry.lookup(name_office);
+            return office!=null;
+        } catch (Exception e){
+            return false;
+        }
     }
 
     @Override
-    public int getPumpOut(int max){
+    public int getPumpOut(int max) throws RemoteException{
         int got_pumped_out = Math.min(current_volume,max);
         current_volume = current_volume-got_pumped_out;
         ordered = 0;
@@ -45,7 +63,7 @@ public class House implements IHouse{
         using = !using;
     }
 
-    public void using_water(String host, int port){
+    public void using_water(){
         Random random = new Random();
         new Thread(() -> {
             while(true){
@@ -59,7 +77,7 @@ public class House implements IHouse{
                         int increase = random.nextInt(10);
                         current_volume = Math.min(current_volume+increase,max_volume);
                         if((current_volume>=0.8*max_volume)&&(ordered==0)){
-                            order_tanker(host, port);
+                            order_tanker();
                         }
                         if(current_volume>=max_volume) switch_usage();
                     }
@@ -68,12 +86,14 @@ public class House implements IHouse{
         }).start();
     }
 
-    public void order_tanker(String host, int port){
+    public void order_tanker(){
         if(current_volume>=0.8*max_volume){
-            String request = "o:"+host+","+port;
-            String response = SocketHandler.sendRequest(office_host,office_port,request);
-            if(response!=null){
-                ordered = Integer.parseInt(response);
+            try{
+                Registry r = LocateRegistry.getRegistry(port_tailor);
+                IOffice office = (IOffice) r.lookup(name_office);
+                ordered = office.order(this,rmi_name);
+            } catch (Exception e){
+                e.printStackTrace();
             }
         }
     }
@@ -86,48 +106,10 @@ public class House implements IHouse{
         return current_volume;
     }
 
-    public void set_office_adress(String office_host, int office_port){
-        this.office_host = office_host;
-        this.office_port = office_port;
-    }
+
 
     public int is_ordered(){
         return ordered;
     }
 
-}
-
-class HouseThread implements Runnable{
-    private Socket socket;
-    House house;
-
-    public HouseThread(Socket socket, House house){
-        this.socket = socket;
-        this.house = house;
-    }
-
-    @Override
-    public void run(){
-        try{
-            InputStream inputStream = socket.getInputStream();
-            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-            OutputStream outputStream = socket.getOutputStream();
-            PrintWriter pw = new PrintWriter(outputStream,true);
-            String request = bufferedReader.readLine();
-            if (request.startsWith("gp:")) {
-                int max_vol = Integer.parseInt(request.substring(3));
-                int pumped_out_vol = house.getPumpOut(max_vol);
-                pw.println(pumped_out_vol);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                socket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 }

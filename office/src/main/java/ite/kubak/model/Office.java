@@ -1,78 +1,115 @@
 package ite.kubak.model;
 
-import ite.kubak.sockets.SocketHandler;
-
-import java.io.*;
-import java.net.Socket;
+import interfaces.IHouse;
+import interfaces.IOffice;
+import interfaces.ISewagePlant;
+import interfaces.ITanker;
+import java.rmi.Naming;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Office implements IOffice{
+public class Office implements IOffice {
 
     private int port;
+    private String rmi_name;
+    private String sewage_name;
+    private int tailor_port;
+    private String tailor_host;
     private int sewage_port;
     private String sewage_host;
     private Map<Integer, RegisteredInfo> tankers = new HashMap<>();
     private List<HouseInfo> orders = new ArrayList<>();
 
-    public void start(String sewage_host, int sewage_port, int port){
-        this.sewage_host = sewage_host;
-        this.sewage_port = sewage_port;
+    public void start(int port, String rmi_name, String sewage_name, int tailor_port, String tailor_host){
         this.port = port;
-        SocketHandler.startServer(port,sewage_host, socket -> new Thread(new OfficeThread(socket,this)).start());
+        this.rmi_name = rmi_name;
+        this.sewage_name = sewage_name;
+        this.tailor_port = tailor_port;
+        this.tailor_host = tailor_host;
+
+        try{
+            IOffice io = (IOffice) UnicastRemoteObject.exportObject(this,port);
+            Registry registry = LocateRegistry.getRegistry(tailor_host,tailor_port);
+            registry.rebind(rmi_name,io);
+        } catch (RemoteException e){
+            e.printStackTrace();
+        }
     }
 
-    public boolean test_sewage_connection(String sewage_host, int sewage_port){
-        return SocketHandler.testConnection(sewage_port,sewage_host);
+    public boolean testConnection(String host, int tailor_port, String sewage_name){
+        try{
+            Registry registry = LocateRegistry.getRegistry(host,tailor_port);
+            registry.list();
+            ISewagePlant sewagePlant = (ISewagePlant) registry.lookup(sewage_name);
+            return sewagePlant!=null;
+        } catch (Exception e){
+            return false;
+        }
     }
 
     @Override
-    public int register(String host, int port){
+    public int register(ITanker tanker, String name) throws RemoteException {
         int number = tankers.size()+1;
-        tankers.putIfAbsent(number,new RegisteredInfo(port,host,number,0));
+        tankers.putIfAbsent(number,new RegisteredInfo(tanker,name,number,0));
         return number;
     }
 
     @Override
-    public int order(String house_host, int house_port){
+    public int order(IHouse house, String name) throws RemoteException{
         if(tankers.isEmpty()) return 0;
         else{
-            orders.add(new HouseInfo(house_host,house_port));
+            orders.add(new HouseInfo(house,name));
             return 1;
         }
     }
 
     @Override
-    public void setReadyToServe(int number){
+    public void setReadyToServe(int number) throws RemoteException{
         tankers.get(number).setReady(1);
     }
 
     public int get_tanker_status(int number){
-        String request = "gs:"+number;
-        String response = SocketHandler.sendRequest(sewage_host,sewage_port,request);
-        if(response!=null) return Integer.parseInt(response);
-        else return 0;
+        try{
+            Registry r = LocateRegistry.getRegistry(tailor_port);
+            ISewagePlant sewagePlant = (ISewagePlant) r.lookup(sewage_name);
+            return sewagePlant.getStatus(number);
+        } catch (Exception e){
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     public void pay_to_tanker(int number){
-        String request = "spo:"+number;
-        SocketHandler.sendRequest(sewage_host,sewage_port,request);
+        try{
+            Registry r = LocateRegistry.getRegistry(tailor_port);
+            ISewagePlant sewagePlant = (ISewagePlant) r.lookup(sewage_name);
+            sewagePlant.setPayoff(number);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
-    public void set_job_to_tanker(String house_host, int house_port, String tanker_host, int tanker_port){
-        String request = "sj:"+house_host+","+house_port;
-        String response = SocketHandler.sendRequest(tanker_host,tanker_port,request);
-        if(response!=null){
+    public void set_job_to_tanker(IHouse house, String tanker_name){
+        try{
+            Registry r = LocateRegistry.getRegistry(tailor_port);
+            ITanker tanker = (ITanker) Naming.lookup(tanker_name);
+            tanker.setJob(house);
             List<HouseInfo> toRemove = new ArrayList<>();
             for (HouseInfo info : orders) {
-                if (info.getHost().equals(house_host) && info.getPort() == house_port) toRemove.add(info);
+                if (info.getHouse().equals(house)) toRemove.add(info);
             }
             orders.removeAll(toRemove);
             for(RegisteredInfo info : tankers.values()){
-                if(info.getHost().equals(tanker_host) && info.getPort()==tanker_port) info.setReady(0);
+                if(info.getRmi_name().equals(tanker_name)) info.setReady(0);
             }
+        } catch (Exception e){
+            e.printStackTrace();
         }
     }
 
@@ -82,54 +119,5 @@ public class Office implements IOffice{
 
     public List<HouseInfo> get_orders(){
         return orders;
-    }
-}
-
-class OfficeThread implements Runnable{
-    private Socket socket;
-    Office office;
-
-    public OfficeThread(Socket socket, Office office){
-        this.socket = socket;
-        this.office = office;
-    }
-
-    @Override
-    public void run(){
-        try{
-            InputStream inputStream = socket.getInputStream();
-            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-            OutputStream outputStream = socket.getOutputStream();
-            PrintWriter pw = new PrintWriter(outputStream,true);
-            String request = bufferedReader.readLine();
-            if (request.startsWith("r:")) {
-                String[] parts = request.substring(2).split(",");
-                String host = parts[0];
-                int port = Integer.parseInt(parts[1]);
-                int number = office.register(host,port);
-                pw.println(number);
-            }
-            else if(request.startsWith("o:")){
-                String[] parts = request.substring(2).split(",");
-                String host = parts[0];
-                int port = Integer.parseInt(parts[1]);
-                int decision = office.order(host,port);
-                pw.println(decision);
-            }
-            else if(request.startsWith("sr:")){
-                int number = Integer.parseInt(request.substring(3));
-                office.setReadyToServe(number);
-                pw.println("ready");
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                socket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
     }
 }

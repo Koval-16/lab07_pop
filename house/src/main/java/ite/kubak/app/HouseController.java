@@ -12,52 +12,50 @@ public class HouseController {
     @FXML private Button office_button;
     private HouseListener listener = new HouseListener();
     @FXML private TextField port_field;
-    @FXML private TextField host_field;
+    @FXML private TextField name_field;
     @FXML private TextField volume_field;
-    @FXML private TextField officehost;
-    @FXML private TextField officeport;
+    @FXML private TextField office_name;
+    @FXML private TextField tailor_port;
+    @FXML private TextField tailor_host;
     @FXML private ProgressBar progress;
     @FXML private Label percent;
-    @FXML private Label host;
-    @FXML private Label port;
     @FXML private Label order;
 
     @FXML
     public void port_button_clicked(){
         try{
             int port_val = Integer.parseInt(port_field.getText());
-            String host_val = host_field.getText();
+            String name = name_field.getText();
             int volume = Integer.parseInt(volume_field.getText());
-            String office_host = officehost.getText();
-            int office_port = Integer.parseInt(officeport.getText());
-            if(port_val<0 || port_val>65535) throw new IllegalArgumentException();
-            if(office_port<0 || office_port>65535) throw new IllegalArgumentException();
+            String name_office = office_name.getText();
+            int port_tailor = Integer.parseInt(tailor_port.getText());
+            String host_tailor = tailor_host.getText();
             if(volume<=0) throw new IllegalArgumentException();
-            if(listener.start(port_val,host_val,volume,office_host,office_port)){
-                startProgressBarUpdate();
-                port_button.setDisable(true);
-                use_button.setDisable(false);
-                office_button.setDisable(false);
-                port_field.setDisable(true);
-                host_field.setDisable(true);
-                volume_field.setDisable(true);
-                host.setText("Host biura: "+officehost.getText());
-                port.setText("Port biura: "+officeport.getText());
-            }
-            else throw new IllegalArgumentException();
+            if(port_val<0 || port_val>65535) throw new IllegalArgumentException();
+            if(port_tailor<0 || port_tailor>65535) throw new IllegalArgumentException();
+            if(listener.testConnection(host_tailor,port_tailor,name_office)) throw new RuntimeException();
+            listener.start(port_val,name,volume,name_office,port_tailor,host_tailor);
+            startProgressBarUpdate();
+            port_button.setDisable(true);
+            use_button.setDisable(false);
+            office_button.setDisable(false);
+            name_field.setDisable(true);
+            office_name.setDisable(true);
+            tailor_port.setDisable(true);
+            tailor_host.setDisable(true);
+            port_field.setDisable(true);
+            volume_field.setDisable(true);
         } catch (Exception e){
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("NIEPOPRAWNE DANE");
             alert.setHeaderText("Wprowadzono niepoprawne dane portu lub hosta");
-            alert.setContentText("Upewnij się, że porty to liczba od 0 do 65535, oraz że istnieje podany port biura." +
-                    " Zwróć też uwagę, że pojemność szamba musi być liczbą naturalną >0");
+            alert.setContentText("Sprawdź wprowadzone dane");
             alert.showAndWait();
         }
     }
 
     @FXML
     public void office_button_clicked(){
-        listener.set_office_address(officehost.getText(),Integer.parseInt(officeport.getText()));
     }
 
     @FXML

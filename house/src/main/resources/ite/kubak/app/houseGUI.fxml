@@ -6,25 +6,24 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="423.0" prefWidth="442.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ite.kubak.app.HouseController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="476.0" prefWidth="442.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ite.kubak.app.HouseController">
    <children>
-      <Label layoutX="84.0" layoutY="25.0" text="Port" />
-      <TextField fx:id="port_field" layoutX="82.0" layoutY="42.0" text="1337" />
+      <Label layoutX="86.0" layoutY="14.0" text="Port" />
+      <TextField fx:id="port_field" layoutX="84.0" layoutY="31.0" text="1337" />
       <Button fx:id="port_button" layoutX="83.0" layoutY="235.0" mnemonicParsing="false" onAction="#port_button_clicked" prefHeight="25.0" prefWidth="149.0" text="OK" />
-      <TextField fx:id="host_field" layoutX="81.0" layoutY="84.0" text="127.0.0.1" />
-      <Label layoutX="82.0" layoutY="67.0" text="Host" />
+      <TextField fx:id="name_field" layoutX="83.0" layoutY="73.0" text="House" />
+      <Label layoutX="84.0" layoutY="56.0" text="Nazwa" />
       <Button fx:id="use_button" disable="true" layoutX="84.0" layoutY="295.0" mnemonicParsing="false" onAction="#usage_button_clicked" prefHeight="25.0" prefWidth="149.0" text="ZUŻYWAJ" />
       <ProgressBar fx:id="progress" layoutX="28.0" layoutY="331.0" prefHeight="25.0" prefWidth="259.0" progress="0.0" />
-      <TextField fx:id="volume_field" layoutX="81.0" layoutY="126.0" text="100" />
-      <Label layoutX="81.0" layoutY="109.0" text="Pojemnosc szamba" />
+      <TextField fx:id="volume_field" layoutX="83.0" layoutY="115.0" text="100" />
+      <Label layoutX="83.0" layoutY="98.0" text="Pojemnosc szamba" />
       <Label fx:id="percent" layoutX="149.0" layoutY="356.0" />
-      <Label layoutX="81.0" layoutY="151.0" text="Host biura" />
-      <TextField fx:id="officehost" layoutX="82.0" layoutY="168.0" prefHeight="25.0" prefWidth="149.0" text="127.0.0.1" />
-      <Label layoutX="83.0" layoutY="193.0" text="Port biura" />
-      <TextField fx:id="officeport" layoutX="82.0" layoutY="210.0" text="1444" />
+      <Label layoutX="83.0" layoutY="140.0" text="Nazwa biura" />
+      <TextField fx:id="office_name" layoutX="84.0" layoutY="157.0" prefHeight="25.0" prefWidth="149.0" text="Office" />
+      <Label layoutX="85.0" layoutY="182.0" text="Tailor" />
+      <TextField fx:id="tailor_port" layoutX="84.0" layoutY="199.0" text="2000" />
       <Button fx:id="office_button" disable="true" layoutX="84.0" layoutY="260.0" mnemonicParsing="false" onAction="#office_button_clicked" prefHeight="25.0" prefWidth="149.0" text="Zaktualizuj biuro obsługujące" />
-      <Label fx:id="host" layoutX="7.0" layoutY="373.0" text="Host biura:" />
-      <Label fx:id="port" layoutX="7.0" layoutY="390.0" text="Port biura:" />
       <Label fx:id="order" layoutX="287.0" layoutY="390.0" />
+      <TextField fx:id="tailor_host" layoutX="248.0" layoutY="199.0" text="localhost" />
    </children>
 </AnchorPane>

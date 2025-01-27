@@ -1,17 +1,19 @@
 package ite.kubak.model;
 
+import interfaces.IHouse;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class OfficeListener {
     Office office = new Office();
 
-    public boolean start(String sewage_host, int sewage_port, int port){
-        if(office.test_sewage_connection(sewage_host,sewage_port)){
-            office.start(sewage_host, sewage_port, port);
-            return true;
-        }
-        else return false;
+    public void start(int port_office, String name_office, String name_sewage, int port_tailor, String name_tailor){
+        office.start(port_office,name_office,name_sewage,port_tailor,name_tailor);
+    }
+
+    public boolean testConnection(String host, int tailor_port, String sewage_name){
+        return office.testConnection(host,tailor_port,sewage_name);
     }
 
     public List<RegisteredInfo> get_tankers_to_table(){
@@ -32,7 +34,7 @@ public class OfficeListener {
         office.pay_to_tanker(number);
     }
 
-    public void set_job_to_tanker(String house_host, int house_port, String tanker_host, int tanker_port){
-        office.set_job_to_tanker(house_host, house_port, tanker_host, tanker_port);
+    public void set_job_to_tanker(IHouse house, String tanker_name){
+        office.set_job_to_tanker(house,tanker_name);
     }
 }
